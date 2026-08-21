@@ -10,6 +10,8 @@ export type User = {
   name: string;
   email: string;
   password: string;
+  resetPasswordToken?: string | undefined;
+  resetPasswordExpire?: Date | undefined;
 };
 
 export type LoginRequest = {

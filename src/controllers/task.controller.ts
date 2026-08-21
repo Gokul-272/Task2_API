@@ -22,12 +22,6 @@ export const getTaskById = async (req: AuthRequest, res: Response, next: NextFun
 export const createTask = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
     const { title, description } = req.body;
-    if (!title || typeof title !== "string") {
-      throw new AppError("Title is required and must be a string", 400);
-    }
-    if (!description || typeof description !== "string") {
-      throw new AppError("Description is required and must be a string", 400);
-    }
     if(!req.user || !req.user.userId) {
       throw new AppError("User not authenticated", 401);
     }
@@ -41,12 +35,6 @@ export const updateTask = async (req: AuthRequest, res: Response, next: NextFunc
   try {
     const id = req.params.id as string;
     const { title, description } = req.body;
-    if (title !== undefined && typeof title !== "string") {
-      throw new AppError("Title must be a string", 400);
-    }
-    if (description !== undefined && typeof description !== "string") {
-      throw new AppError("Description must be a string", 400);
-    }
     const updatedTask = await taskService.updateTask(id, title, description);
     res.status(200).json(updatedTask);
   } catch (error) {

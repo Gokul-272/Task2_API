@@ -3,7 +3,7 @@ import { AppError } from "./error.middleware.js";
 import { verifyToken } from "../utils/jwt.utils.js";
 import type { AuthRequest } from "../types.ts";
 
-export const authenticateJWT = (req: AuthRequest, res: Response,next: NextFunction,): void => {
+export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction,): void => {
   const token = req.cookies.token;
   if (!token) {
     return next(new AppError("Token is missing", 401));

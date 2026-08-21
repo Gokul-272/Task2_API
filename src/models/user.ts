@@ -18,8 +18,9 @@ const userSchema = new Schema<User>({
     type: String,
     required: true,
     minlength: 6,
-    select: false,
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 },
 {
     timestamps: true,

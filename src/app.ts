@@ -2,12 +2,13 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import morgan from "morgan";
 import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 const app = express();
 app.use(helmet());
+app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(cors());
 app.use(express.json());
