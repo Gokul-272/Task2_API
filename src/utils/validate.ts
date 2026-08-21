@@ -21,11 +21,11 @@ export const validate = (schema: RequestValidationSchema,) => {
       }
 
       if (result.params !== undefined) {
-        req.params = result.params as Request["params"];;
+        req.params = result.params as Request["params"];
       }
 
       if (result.query !== undefined) {
-        req.query = result.query as Request["query"];;
+        req.query = result.query as Request["query"];
       }
 
       next();
