@@ -1,14 +1,14 @@
 import jwt from "jsonwebtoken";
 import { AppError } from "../middleware/error.middleware.js";
 import type { JwtPayload } from "../types.ts";
-const secret = process.env.JWT_SECRET;
-if (!secret) {
+import type { StringValue } from "ms";
+export const generateToken = (payload: JwtPayload, secret: string, expires: StringValue): string => {
+ if (!secret) {
   throw new Error("JWT_SECRET is not defined in the .env file");
-}
-export const generateToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, secret, { expiresIn: "1h" });
+ }
+  return jwt.sign(payload, secret, { expiresIn: expires });
 };
-export const verifyToken = (token: string): JwtPayload => {
+export const verifyToken = (token: string, secret: string): JwtPayload => {
   try {
     const decoded = jwt.verify(token, secret);
     if (typeof decoded !== "object") {

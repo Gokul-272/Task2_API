@@ -4,16 +4,12 @@ import { verifyToken } from "../utils/jwt.utils.js";
 import type { AuthRequest } from "../types.ts";
 
 export const authenticateJWT = (req: AuthRequest, res: Response,next: NextFunction,): void => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new AppError("Authorization header is missing", 401));
-  }
-  const token = authHeader.split(" ")[1];
+  const token = req.cookies.token;
   if (!token) {
     return next(new AppError("Token is missing", 401));
   }
   try {
-    const decoded = verifyToken(token);
+    const decoded = verifyToken(token, process.env.JWT_SECRET as string);
     req.user = decoded;
     next();
   } catch (error) {

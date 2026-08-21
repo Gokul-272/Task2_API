@@ -1,16 +1,15 @@
 import type { Request } from "express";
 
 export type Task = {
-  id: string;
   title: string;
   description: string;
+  userId: string;
 };
 
 export type User = {
-  id: string;
   name: string;
   email: string;
-  passwordHash: string;
+  password: string;
 };
 
 export type LoginRequest = {
