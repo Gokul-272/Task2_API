@@ -128,7 +128,7 @@ export const forgot = async (req: Request, res: Response, next: NextFunction): P
     user.resetPasswordToken = tokenHash;
     user.resetPasswordExpire = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
-    const resetLink = `http://localhost:3000/reset-password?token=${rawToken}`;
+    const resetLink = `http://localhost:3000/auth/reset-password?token=${rawToken}`;
     const sent: Boolean = await sendResetEmail(user.email, resetLink);
     if (!sent) {
       throw new AppError("Reset link not sent", 500);

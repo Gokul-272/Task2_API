@@ -17,7 +17,7 @@ export const loginSchema = z.object({
 
 export const changePasswordSchema = z.object({
   body: z.object({
-    oldPassword: z.string().min(1, "Old password is required"),
+    currentPassword: z.string().min(1, "Current password is required"),
     newPassword: z.string().min(6, "New password must be at least 6 characters long"),
   }),
 });
@@ -29,9 +29,6 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  params: z.object({
-    token: z.string().min(1, "Token is required"),
-  }),
   body: z.object({
     newPassword: z.string().min(6, "New password must be at least 6 characters long"),
   }),
