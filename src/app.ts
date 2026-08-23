@@ -9,13 +9,6 @@ import taskRoutes from "./routes/task.routes.js";
 import mongoose from "mongoose";
 import connectDB from "./db/db.js";
 const app = express();
-connectDB()
-  .then(() => {
-    console.log("🔥 MongoDB connected successfully");
-  })
-  .catch((error) => {
-    console.error("🔥 MongoDB connection failed:", error);
-  });
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(cookieParser());
@@ -27,6 +20,14 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 app.use(express.json());
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 app.get("/health", (req, res) => {
   console.log("🔥 HEALTH ROUTE HIT");
   console.log("mongodb_url exists:", !!process.env.mongodb_url);
