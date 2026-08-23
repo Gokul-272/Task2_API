@@ -241,8 +241,6 @@ export const resetPasswordService = async (token: string, password: string): Pro
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
-
-  // Optionally, revoke all sessions on password reset
   await SessionModel.deleteMany({ userId: user.id });
 
   return true;
