@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/task.routes.js";
+import mongoose from "mongoose";
 const app = express();
 app.use(helmet());
 app.use(morgan("dev"));
@@ -19,7 +20,17 @@ app.use(cors({
 }));
 app.use(express.json());
 app.get("/health", (req, res) => {
-  res.status(200).send("Welcome to Task Management API");
+  console.log("🔥 HEALTH ROUTE HIT");
+  console.log("mongodb_url exists:", !!process.env.mongodb_url);
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+  console.log("MongoDB state:", mongoose.connection.readyState);
+
+  res.status(200).json({
+    message: "Welcome to Task Management API",
+    mongoUrlExists: !!process.env.mongodb_url,
+    mongoState: mongoose.connection.readyState,
+    nodeEnv: process.env.NODE_ENV,
+  });
 });
 app.use("/auth", authRoutes);
 app.use("/tasks", taskRoutes);
