@@ -8,5 +8,6 @@ export default async function connectDB() {
     console.log("MongoDB connected:", mongoose.connection.readyState);
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
+    throw error;
   }
 }
