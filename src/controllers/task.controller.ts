@@ -4,7 +4,10 @@ import { AppError } from "../middleware/error.middleware.js";
 import type { AuthRequest } from "../types.js";
 export const getAllTasks = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
-    const tasks = await taskService.getAllTasks();
+    if (!req.user || !req.user.userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+    const tasks = await taskService.getAllTasks(req.user.userId as string);
     res.status(200).json(tasks);
   } catch (error) {
     next(error);
@@ -12,8 +15,11 @@ export const getAllTasks = async (req: AuthRequest, res: Response, next: NextFun
 };
 export const getTaskById = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
+    if (!req.user || !req.user.userId) {
+      throw new AppError("User not authenticated", 401);
+    }
     const id = req.params.id as string;
-    const task = await taskService.getTaskById(id);
+    const task = await taskService.getTaskById(id, req.user.userId as string);
     res.status(200).json(task);
   } catch (error) {
     next(error);
@@ -22,7 +28,7 @@ export const getTaskById = async (req: AuthRequest, res: Response, next: NextFun
 export const createTask = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
     const { title, description } = req.body;
-    if(!req.user || !req.user.userId) {
+    if (!req.user || !req.user.userId) {
       throw new AppError("User not authenticated", 401);
     }
     const newTask = await taskService.createTask(title, description, req.user.userId as string);
@@ -33,9 +39,12 @@ export const createTask = async (req: AuthRequest, res: Response, next: NextFunc
 };
 export const updateTask = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
+    if (!req.user || !req.user.userId) {
+      throw new AppError("User not authenticated", 401);
+    }
     const id = req.params.id as string;
     const { title, description } = req.body;
-    const updatedTask = await taskService.updateTask(id, title, description);
+    const updatedTask = await taskService.updateTask(id, req.user.userId as string, title, description);
     res.status(200).json(updatedTask);
   } catch (error) {
     next(error);
@@ -43,8 +52,11 @@ export const updateTask = async (req: AuthRequest, res: Response, next: NextFunc
 };
 export const deleteTask = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
+    if (!req.user || !req.user.userId) {
+      throw new AppError("User not authenticated", 401);
+    }
     const id = req.params.id as string;
-    const deletedTask = await taskService.deleteTask(id);
+    const deletedTask = await taskService.deleteTask(id, req.user.userId as string);
     res.status(200).json(deletedTask);
   } catch (error) {
     next(error);

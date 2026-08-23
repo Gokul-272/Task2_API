@@ -28,6 +28,7 @@ export type RegisterRequest = {
 export type JwtPayload = {
   userId: string;
   email: string;
+  sessionId?: string; 
 };
 
 export interface AuthRequest extends Request {

@@ -1,22 +1,28 @@
 import type { Request, Response, NextFunction } from "express";
-import { loginUser, registerUser, refreshTokenService, changePasswordService, sendResetEmail, resetPasswordService } from "../services/auth.service.js";
+import { loginUser, registerUser, refreshTokenService, changePasswordService, sendResetEmail, resetPasswordService, logoutUserService } from "../services/auth.service.js";
 import type { AuthRequest, LoginRequest, RegisterRequest } from "../types.ts";
 import { AppError } from "../middleware/error.middleware.js";
 import { UserModel } from "../models/user.js";
 import crypto from "crypto";
-export const register = async (req: Request, res: Response, next: NextFunction,): Promise<void> => {
+
+const isProd = process.env.NODE_ENV === "production";
+
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const credentials = req.body as RegisterRequest;
-    const { token, refreshToken } = await registerUser(credentials);
+    const userAgent = req.headers["user-agent"] || "unknown";
+    const { token, refreshToken } = await registerUser(credentials, userAgent);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.status(201).json({
       success: true,
@@ -27,19 +33,22 @@ export const register = async (req: Request, res: Response, next: NextFunction,)
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction,): Promise<void> => {
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const credentials = req.body as LoginRequest;
-    const { token, refreshToken } = await loginUser(credentials);
+    const userAgent = req.headers["user-agent"] || "unknown";
+    const { token, refreshToken } = await loginUser(credentials, userAgent);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.status(200).json({
       success: true,
@@ -49,17 +58,22 @@ export const login = async (req: Request, res: Response, next: NextFunction,): P
     next(error);
   }
 };
+
 export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      await logoutUserService(refreshToken);
+    }
     res.clearCookie("token", {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     });
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     });
     res.status(200).json({
       success: true,
@@ -69,19 +83,25 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
     next(error);
   }
 };
+
 export const refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    const { accessToken, refreshToken: newRefreshToken } = await refreshTokenService(refreshToken);
+    const refreshTokenCookie = req.cookies.refreshToken;
+    if (!refreshTokenCookie) {
+      throw new AppError("No refresh token provided", 401);
+    }
+    const { accessToken, refreshToken: newRefreshToken } = await refreshTokenService(refreshTokenCookie);
     res.cookie("token", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 15 * 60 * 1000,
     });
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       success: true,
@@ -91,6 +111,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 }
+
 export const changePassword = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -109,6 +130,7 @@ export const changePassword = async (req: AuthRequest, res: Response, next: Next
     next(error);
   }
 };
+
 export const forgot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email } = req.body;
@@ -128,8 +150,9 @@ export const forgot = async (req: Request, res: Response, next: NextFunction): P
     user.resetPasswordToken = tokenHash;
     user.resetPasswordExpire = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
-    const resetLink = `http://localhost:3000/auth/reset-password?token=${rawToken}`;
-    const sent: Boolean = await sendResetEmail(user.email, resetLink);
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3001";
+    const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
+    const sent = await sendResetEmail(user.email, resetLink);
     if (!sent) {
       throw new AppError("Reset link not sent", 500);
     }
@@ -138,6 +161,7 @@ export const forgot = async (req: Request, res: Response, next: NextFunction): P
     next(error);
   }
 };
+
 export const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { token } = req.query;
