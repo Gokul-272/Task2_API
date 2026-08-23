@@ -164,12 +164,11 @@ export const forgot = async (req: Request, res: Response, next: NextFunction): P
 
 export const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { token } = req.query;
-    const { password } = req.body;
-    if (!token || !password) {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
       throw new AppError("Token and password are required", 400);
     }
-    const passwordchange = await resetPasswordService(token as string, password);
+    const passwordchange = await resetPasswordService(token as string, newPassword as string);
     if (!passwordchange) {
       throw new AppError("Password reset failed", 500);
     }
