@@ -1,36 +1,18 @@
-import "dotenv/config";
 import mongoose from "mongoose";
 
-let connectionPromise: Promise<typeof mongoose> | null = null;
-
-export default async function connectDB() {
-
+const MONGO_URI = process.env.mongodb_url;
+const connectDB = async (): Promise<void> => {
+  if (!MONGO_URI) {
+    throw new Error("mongodb_url is not defined");
+  }
   if (mongoose.connection.readyState === 1) {
-    return mongoose;
+    return;
   }
-
-  if (connectionPromise) {
-    return connectionPromise;
+  if (mongoose.connection.readyState === 2) {
+    return;
   }
+  await mongoose.connect(MONGO_URI);
+  console.log("MongoDB connected");
+};
 
-  console.log("🔥 Connecting to MongoDB...");
-  console.log("mongodb_url exists:", !!process.env.mongodb_url);
-
-  connectionPromise = mongoose
-    .connect(process.env.mongodb_url as string)
-    .then((connection) => {
-      console.log(
-        "🔥 MongoDB connected:",
-        mongoose.connection.readyState
-      );
-      return connection;
-    })
-    .catch((error) => {
-      console.error("🔥 MongoDB connection failed:", error);
-      connectionPromise = null;
-
-      throw error;
-    });
-
-  return connectionPromise;
-}
+export default connectDB;

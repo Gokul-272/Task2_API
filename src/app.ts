@@ -29,11 +29,6 @@ app.use(async (req, res, next) => {
   }
 });
 app.get("/health", (req, res) => {
-  console.log("🔥 HEALTH ROUTE HIT");
-  console.log("mongodb_url exists:", !!process.env.mongodb_url);
-  console.log("NODE_ENV:", process.env.NODE_ENV);
-  console.log("MongoDB state:", mongoose.connection.readyState);
-
   res.status(200).json({
     message: "Welcome to Task Management API",
     mongoUrlExists: !!process.env.mongodb_url,
