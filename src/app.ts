@@ -7,7 +7,15 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 import mongoose from "mongoose";
+import connectDB from "./db/db.js";
 const app = express();
+connectDB()
+  .then(() => {
+    console.log("🔥 MongoDB connected successfully");
+  })
+  .catch((error) => {
+    console.error("🔥 MongoDB connection failed:", error);
+  });
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(cookieParser());
