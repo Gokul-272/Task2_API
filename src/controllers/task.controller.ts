@@ -7,8 +7,12 @@ export const getAllTasks = async (req: AuthRequest, res: Response, next: NextFun
     if (!req.user || !req.user.userId) {
       throw new AppError("User not authenticated", 401);
     }
-    const tasks = await taskService.getAllTasks(req.user.userId as string);
-    res.status(200).json(tasks);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const status = req.query.status as string;
+
+    const tasksData = await taskService.getAllTasks(req.user.userId as string, page, limit, status);
+    res.status(200).json(tasksData);
   } catch (error) {
     next(error);
   }
@@ -27,11 +31,11 @@ export const getTaskById = async (req: AuthRequest, res: Response, next: NextFun
 };
 export const createTask = async (req: AuthRequest, res: Response, next: NextFunction,) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, status } = req.body;
     if (!req.user || !req.user.userId) {
       throw new AppError("User not authenticated", 401);
     }
-    const newTask = await taskService.createTask(title, description, req.user.userId as string);
+    const newTask = await taskService.createTask(title, description, req.user.userId as string, status);
     res.status(201).json(newTask);
   } catch (error) {
     next(error);
@@ -43,8 +47,8 @@ export const updateTask = async (req: AuthRequest, res: Response, next: NextFunc
       throw new AppError("User not authenticated", 401);
     }
     const id = req.params.id as string;
-    const { title, description } = req.body;
-    const updatedTask = await taskService.updateTask(id, req.user.userId as string, title, description);
+    const { title, description, status } = req.body;
+    const updatedTask = await taskService.updateTask(id, req.user.userId as string, title, description, status);
     res.status(200).json(updatedTask);
   } catch (error) {
     next(error);

@@ -1,9 +1,20 @@
 import type { Request } from "express";
 
+export type TaskStatus = "todo" | "inprogress" | "completed";
+
 export type Task = {
   title: string;
   description: string;
   userId: string;
+  status: TaskStatus;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 };
 
 export type User = {

@@ -14,6 +14,11 @@ const taskSchema = new Schema<Task>({
   userId: {
     type: String,
     required: true,
+  },
+  status: {
+    type: String,
+    enum: ["todo", "inprogress", "completed"],
+    default: "todo",
   }},
 
   {
